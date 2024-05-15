@@ -48,7 +48,7 @@ const getOptionChainWithRetry = async (cookie, identifier, retryCount = 0) => {
 };
 
 const getCookiesWithRetry = async () => {
-  const options = getOptionsWithUserAgent();
+  // const options = getOptionsWithUserAgent();
   try {
     const response = await axios.get(baseURL, options);
     const cookie = response.headers["set-cookie"];
