@@ -20,7 +20,7 @@ const app = express();
 
 const MAX_RETRY_COUNT = 3;
 
-const getOptionChainWithRetry = async (cookie, identifier, retryCount = 0) => {
+const getOptionChainWithRetry = async (identifier, retryCount = 0) => {
   const isIndex = ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"].includes(
     identifier
   );
@@ -31,7 +31,7 @@ const getOptionChainWithRetry = async (cookie, identifier, retryCount = 0) => {
       baseURL + apiEndpoint + "?symbol=" + encodeURIComponent(identifier);
     const response = await axios.get(url, {
       ...options,
-      headers: { ...options.headers, Cookie: cookie },
+      headers: { ...options.headers },
     });
     return response.data;
   } catch (error) {
@@ -40,7 +40,7 @@ const getOptionChainWithRetry = async (cookie, identifier, retryCount = 0) => {
       error
     );
     if (retryCount < MAX_RETRY_COUNT) {
-      return getOptionChainWithRetry(cookie, identifier, retryCount + 1);
+      return getOptionChainWithRetry(identifier, retryCount + 1);
     } else {
       throw new Error("Failed to fetch option chain after multiple retries");
     }
@@ -75,10 +75,7 @@ app.get("/*", async (req, res) => {
 
   try {
     // const cookie = await getCookiesWithRetry();
-    const data = await getOptionChainWithRetry(
-      cookie,
-      identifier.toUpperCase()
-    );
+    const data = await getOptionChainWithRetry(identifier.toUpperCase());
     res.json(data).status(200).end();
   } catch (error) {
     console.error("Proxy request error: here", error);
