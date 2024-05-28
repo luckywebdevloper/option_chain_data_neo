@@ -20,7 +20,7 @@ const app = express();
 
 const MAX_RETRY_COUNT = 3;
 
-const getOptionChainWithRetry = async ( identifier, retryCount = 0) => {
+const getOptionChainWithRetry = async (cookie, identifier, retryCount = 0) => {
   const isIndex = ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"].includes(
     identifier
   );
@@ -31,7 +31,7 @@ const getOptionChainWithRetry = async ( identifier, retryCount = 0) => {
       baseURL + apiEndpoint + "?symbol=" + encodeURIComponent(identifier);
     const response = await axios.get(url, {
       ...options,
-      headers: { ...options.headers },
+      headers: { ...options.headers, Cookie: cookie },
     });
     return response.data;
   } catch (error) {
@@ -40,24 +40,24 @@ const getOptionChainWithRetry = async ( identifier, retryCount = 0) => {
       error
     );
     if (retryCount < MAX_RETRY_COUNT) {
-      return getOptionChainWithRetry( identifier, retryCount + 1);
+      return getOptionChainWithRetry(cookie, identifier, retryCount + 1);
     } else {
       throw new Error("Failed to fetch option chain after multiple retries");
     }
   }
 };
 
-const getCookiesWithRetry = async () => {
-  const options = getOptionsWithUserAgent();
-  try {
-    const response = await axios.get(baseURL, options);
-
- 
-  } catch (error) {
-    console.error("Error fetching cookies:");
-    throw new Error("Failed to fetch cookies");
-  }
-};
+// const getCookiesWithRetry = async () => {
+//   const options = getOptionsWithUserAgent();
+//   try {
+//     const response = await axios.get(baseURL, options);
+//     const cookie = response.headers['set-cookie'];
+//     return cookie;
+//   } catch (error) {
+//     console.error('Error fetching cookies:');
+//     throw new Error('Failed to fetch cookies');
+//   };
+// };
 
 app.get("/*", async (req, res) => {
   const now = new Date();
@@ -74,7 +74,7 @@ app.get("/*", async (req, res) => {
   }
 
   try {
-    const cookie = await getCookiesWithRetry();
+    // const cookie = await getCookiesWithRetry();
     const data = await getOptionChainWithRetry(
       cookie,
       identifier.toUpperCase()
